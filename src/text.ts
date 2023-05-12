@@ -24,7 +24,7 @@ export function handleTextNode(textNode: Text, context: TraversalContext): void 
 
 	// Copy text styles
 	// https://css-tricks.com/svg-properties-and-css
-	copyTextStyles(styles, svgTextElement)
+	copyTextStyles(styles, svgTextElement, true)
 
 	const tabSize = parseInt(styles.tabSize, 10)
 
@@ -107,6 +107,7 @@ export function handleTextNode(textNode: Text, context: TraversalContext): void 
 
 export const textAttributes = new Set([
 	'color',
+	'fill',
 	'dominant-baseline',
 	'font-family',
 	'font-size',
@@ -126,7 +127,7 @@ export const textAttributes = new Set([
 	'writing-mode',
 	'user-select',
 ] as const)
-export function copyTextStyles(styles: CSSStyleDeclaration, svgElement: SVGElement): void {
+export function copyTextStyles(styles: CSSStyleDeclaration, svgElement: SVGElement, notFromSvg?: boolean): void {
 	for (const textProperty of textAttributes) {
 		const value = styles.getPropertyValue(textProperty)
 		if (value) {
@@ -134,5 +135,9 @@ export function copyTextStyles(styles: CSSStyleDeclaration, svgElement: SVGEleme
 		}
 	}
 	// tspan uses fill, CSS uses color
-	svgElement.setAttribute('fill', styles.color)
+	// GEDS-11548
+	// If the text does not come from an SVG element, the color attribute of the new SVG element is reassigned to the fill attribute.
+	if (notFromSvg) {
+		svgElement.setAttribute('fill', styles.color)
+	}
 }
